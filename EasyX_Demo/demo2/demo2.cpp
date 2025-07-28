@@ -1,3 +1,29 @@
+/*
+    EasyX Tic-Tac-Toe Demo (demo2.cpp)
+    -----------------------------------
+    This program implements a graphical Tic-Tac-Toe (三子棋) game using the EasyX graphics library.
+    Features:
+      - Two game modes: Player vs Player and Player vs AI (with unbeatable minimax AI).
+      - Mouse-based input for placing pieces.
+      - Mode selection, reset, and exit controls.
+      - Visual feedback for turns, game mode, and game result.
+      - Clean and modular code structure for easy extension.
+
+    Controls:
+      - Mouse Left Click: Place your piece (when it's your turn).
+      - 1 / 2: Select game mode at the start.
+      - R: Reset the current game.
+      - M: Return to mode selection.
+      - ESC: Exit the game.
+
+    Requirements:
+      - EasyX graphics library (https://easyx.cn/)
+      - Windows platform
+
+    Author: (Your Name)
+    Date: (2024)
+*/
+
 #pragma warning(disable : 4819)
 #include <graphics.h>
 #include <vector>
@@ -8,50 +34,63 @@
 
 using namespace std;
 
+// The width of a single cell in the tic-tac-toe board
 int single_width = 240;
+
+// Message structure for EasyX event handling
 ExMessage msg;
+
+// Main loop control flag
 bool isRunning = true;
+
+// Timing variables for frame rate control
 DWORD start_time, delta_time;
 
-// Game mode enum
+// Enumeration for game modes
 enum GameMode
 {
-    PLAYER_VS_PLAYER = 1,
-    PLAYER_VS_AI = 2
+    PLAYER_VS_PLAYER = 1, // Player vs Player mode
+    PLAYER_VS_AI = 2      // Player vs AI mode
 };
 
+// Current game mode
 GameMode currentGameMode = PLAYER_VS_PLAYER;
+
+// Whether to show the mode selection screen
 bool showModeSelection = true;
 
+// The tic-tac-toe board, 3x3 grid initialized to empty ('-')
 vector<vector<char>> board = {
     {'-', '-', '-'},
     {'-', '-', '-'},
     {'-', '-', '-'}};
 
+// Player class representing a human or AI player
 class Player
 {
 public:
-    char symbol;
-    bool isAI;
+    char symbol;   // 'O' or 'X'
+    bool isAI;     // true if this player is an AI
     Player(char s, bool ai = false) : symbol(s), isAI(ai) {}
 };
 
-// AI class for computer opponent
+// AI class for computer opponent using minimax algorithm
 class AI
 {
 private:
-    char aiSymbol;
-    char playerSymbol;
+    char aiSymbol;      // Symbol used by AI ('X')
+    char playerSymbol;  // Symbol used by human player ('O')
 
 public:
     AI(char ai, char player) : aiSymbol(ai), playerSymbol(player) {}
 
-    // Simple AI: find best move using minimax algorithm
+    // Find the best move for the AI using minimax
     pair<int, int> getBestMove(vector<vector<char>> &currentBoard)
     {
         int bestScore = -1000;
         pair<int, int> bestMove = {-1, -1};
 
+        // Try every possible move
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -75,6 +114,7 @@ public:
     }
 
 private:
+    // Minimax algorithm to evaluate board positions
     int minimax(vector<vector<char>> &currentBoard, int depth, bool isMaximizing)
     {
         // Check if AI wins
@@ -131,6 +171,7 @@ private:
         }
     }
 
+    // Check if a given symbol has won on the board
     bool checkWinForSymbol(const vector<vector<char>> &currentBoard, char symbol)
     {
         // Check rows
@@ -161,6 +202,7 @@ private:
         return false;
     }
 
+    // Check if the board is full (no empty cells)
     bool isBoardFull(const vector<vector<char>> &currentBoard)
     {
         for (const auto &row : currentBoard)
@@ -174,6 +216,7 @@ private:
     }
 };
 
+// Draw the tic-tac-toe board grid
 void drawBoard()
 {
     for (int i = 0; i < 3; ++i)
@@ -186,6 +229,7 @@ void drawBoard()
     }
 }
 
+// Draw the pieces ('O' and 'X') on the board
 void drawPiece()
 {
     for (int i = 0; i < 3; ++i)
@@ -195,10 +239,11 @@ void drawPiece()
             switch (board[i][j])
             {
             case 'O':
+                // Draw circle for 'O'
                 circle(j * single_width + single_width / 2, i * single_width + single_width / 2, single_width / 3);
                 break;
             case 'X':
-                // 修正X的绘制 - 需要两条对角线
+                // Draw 'X' as two diagonal lines
                 line(j * single_width + 10, i * single_width + 10, (j + 1) * single_width - 10, (i + 1) * single_width - 10);
                 line((j + 1) * single_width - 10, i * single_width + 10, j * single_width + 10, (i + 1) * single_width - 10);
                 break;
@@ -209,6 +254,7 @@ void drawPiece()
     }
 }
 
+// Draw the tip text showing whose turn it is
 void drawTipText(Player currentPlayer)
 {
     static TCHAR str[128];
@@ -224,6 +270,7 @@ void drawTipText(Player currentPlayer)
     outtextxy(0, 0, str);
 }
 
+// Draw the mode selection screen
 void drawModeSelection()
 {
     static TCHAR str[256];
@@ -233,6 +280,7 @@ void drawModeSelection()
     outtextxy(50, 200, str);
 }
 
+// Draw the current game mode info on the screen
 void drawGameModeInfo()
 {
     static TCHAR str[128];
@@ -249,10 +297,10 @@ void drawGameModeInfo()
     outtextxy(0, 30, str);
 }
 
-// 检测指定棋子的玩家是否胜利
+// Check if the given player has won the game
 bool checkWin(Player p)
 {
-    // 检查行
+    // Check rows
     for (int i = 0; i < 3; i++)
     {
         if (board[i][0] == p.symbol && board[i][1] == p.symbol && board[i][2] == p.symbol)
@@ -260,7 +308,7 @@ bool checkWin(Player p)
             return true;
         }
     }
-    // 检查列
+    // Check columns
     for (int i = 0; i < 3; i++)
     {
         if (board[0][i] == p.symbol && board[1][i] == p.symbol && board[2][i] == p.symbol)
@@ -268,16 +316,16 @@ bool checkWin(Player p)
             return true;
         }
     }
-    // 检查主对角线
+    // Check main diagonal
     if (board[0][0] == p.symbol && board[1][1] == p.symbol && board[2][2] == p.symbol)
         return true;
-    // 检查副对角线
+    // Check anti-diagonal
     if (board[0][2] == p.symbol && board[1][1] == p.symbol && board[2][0] == p.symbol)
         return true;
     return false;
 }
 
-// check draw
+// Check if the game is a draw (no empty cells and no winner)
 bool checkDraw()
 {
     for (const auto &row : board)
@@ -288,6 +336,7 @@ bool checkDraw()
     return true;
 }
 
+// Reset the game board to the initial state
 void resetGame()
 {
     // Reset board
@@ -300,18 +349,19 @@ void resetGame()
     }
 }
 
+// Main function: program entry point
 int main()
 {
-    Player player1('O', false);
-    Player player2('X', false);
-    Player currentPlayer = player1;
-    Player lastPlayer = player1;
+    Player player1('O', false); // Player 1 uses 'O'
+    Player player2('X', false); // Player 2 or AI uses 'X'
+    Player currentPlayer = player1; // Track whose turn it is
+    Player lastPlayer = player1;    // Track who made the last move
     AI ai('X', 'O'); // AI uses X, player uses O
 
-    // 初始化窗口
-    initgraph(single_width * 3, single_width * 3 + 50); // Add extra height for mode info
+    // Initialize the EasyX window (add extra height for info)
+    initgraph(single_width * 3, single_width * 3 + 50);
 
-    BeginBatchDraw();
+    BeginBatchDraw(); // Enable batch drawing for smoother graphics
 
     while (isRunning)
     {
@@ -319,7 +369,7 @@ int main()
 
         if (showModeSelection)
         {
-            // Mode selection screen
+            // Mode selection screen: handle key input for mode selection
             while (peekmessage(&msg))
             {
                 if (msg.message == WM_KEYDOWN)
@@ -351,32 +401,33 @@ int main()
         }
         else
         {
-            // Game screen
+            // Game screen: handle mouse and keyboard input
             while (peekmessage(&msg))
             {
-                // 检查鼠标左键按下消息
+                // Handle mouse left button down for placing a piece
                 if (msg.message == WM_LBUTTONDOWN && !currentPlayer.isAI)
                 {
-                    // 计算点击位置
+                    // Calculate board position from mouse coordinates
                     int x = msg.x;
                     int y = msg.y;
                     int row = y / single_width;
                     int col = x / single_width;
 
-                    // 检查边界
+                    // Check if click is within board bounds
                     if (row >= 0 && row < 3 && col >= 0 && col < 3)
                     {
-                        // 尝试落子
+                        // Place piece if cell is empty
                         if (board[row][col] == '-')
                         {
                             board[row][col] = currentPlayer.symbol;
-                            lastPlayer = currentPlayer; // 记录落子的玩家
+                            lastPlayer = currentPlayer; // Record who made the move
 
-                            // 切换玩家
+                            // Switch to the other player
                             currentPlayer = (currentPlayer.symbol == player1.symbol) ? player2 : player1;
                         }
                     }
                 }
+                // Handle keyboard input for reset, mode selection, and exit
                 else if (msg.message == WM_KEYDOWN)
                 {
                     if (msg.vkcode == VK_ESCAPE)
@@ -398,7 +449,7 @@ int main()
                 }
             }
 
-            // AI move
+            // If it's the AI's turn, let the AI make a move
             if (currentPlayer.isAI && !showModeSelection)
             {
                 Sleep(500); // Add delay to make AI move visible
@@ -413,19 +464,20 @@ int main()
 
             cleardevice();
 
+            // Draw the board, pieces, tip text, and game mode info
             drawBoard();
             drawPiece();
             drawTipText(currentPlayer);
             drawGameModeInfo();
 
-            // Draw controls info
+            // Draw controls info at the bottom
             settextcolor(RGB(100, 100, 100));
             settextstyle(12, 0, _T("Arial"));
             outtextxy(0, single_width * 3 + 10, _T("ESC: Exit | R: Reset | M: Mode Selection"));
 
             FlushBatchDraw();
 
-            // 检查上一个落子的玩家是否获胜
+            // Check if the last player has won
             if (checkWin(lastPlayer))
             {
                 TCHAR str[128];
@@ -443,7 +495,7 @@ int main()
                 lastPlayer = player1;
             }
 
-            // 检查是否平局
+            // Check if the game is a draw
             if (checkDraw())
             {
                 MessageBox(GetHWnd(), _T("It's a draw!"), _T("Game Over"), MB_OK);
@@ -453,6 +505,7 @@ int main()
             }
         }
 
+        // Frame rate control: sleep to maintain ~60 FPS
         delta_time = GetTickCount() - start_time;
         if (delta_time < 1000 / 60)
         {
