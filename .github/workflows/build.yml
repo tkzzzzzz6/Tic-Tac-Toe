@@ -1,0 +1,109 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up MinGW
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        
+    - name: Install dependencies
+      run: |
+        pacman -S --noconfirm mingw-w64-x86_64-gcc
+        pacman -S --noconfirm mingw-w64-x86_64-make
+        
+    - name: Add MinGW to PATH
+      run: |
+        echo "$env:GITHUB_WORKSPACE\msys64\mingw64\bin" >> $env:GITHUB_PATH
+        
+    - name: Check compiler
+      run: |
+        g++ --version
+        
+    - name: Create build directory
+      run: |
+        mkdir -p exe
+        
+    - name: Build demo1 (Mouse Interaction)
+      run: |
+        g++ -std=c++11 -Wall -Wextra -o exe/demo1.exe EasyX_Demo/demo1.cpp
+        if ($LASTEXITCODE -eq 0) { Write-Host "✓ demo1.exe built successfully!" } else { Write-Host "✗ Failed to build demo1.exe" }
+        
+    - name: Build demo2 (Tic-Tac-Toe Game)
+      run: |
+        g++ -std=c++11 -Wall -Wextra -o exe/demo2.exe EasyX_Demo/demo2.cpp
+        if ($LASTEXITCODE -eq 0) { Write-Host "✓ demo2.exe built successfully!" } else { Write-Host "✗ Failed to build demo2.exe" }
+        
+    - name: List build artifacts
+      run: |
+        if (Test-Path "exe") {
+          Get-ChildItem "exe" -Name
+        } else {
+          Write-Host "No build artifacts found"
+        }
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: build-artifacts
+        path: exe/
+        retention-days: 7
+
+  test:
+    runs-on: windows-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: exe/
+        
+    - name: Test executables exist
+      run: |
+        if (Test-Path "exe/demo1.exe") {
+          Write-Host "✓ demo1.exe exists"
+        } else {
+          Write-Host "✗ demo1.exe not found"
+          exit 1
+        }
+        
+        if (Test-Path "exe/demo2.exe") {
+          Write-Host "✓ demo2.exe exists"
+        } else {
+          Write-Host "✗ demo2.exe not found"
+          exit 1
+        }
+        
+    - name: Check file sizes
+      run: |
+        $demo1Size = (Get-Item "exe/demo1.exe").Length
+        $demo2Size = (Get-Item "exe/demo2.exe").Length
+        
+        Write-Host "demo1.exe size: $demo1Size bytes"
+        Write-Host "demo2.exe size: $demo2Size bytes"
+        
+        if ($demo1Size -gt 0 -and $demo2Size -gt 0) {
+          Write-Host "✓ All executables have valid sizes"
+        } else {
+          Write-Host "✗ Some executables have invalid sizes"
+          exit 1
+        } 

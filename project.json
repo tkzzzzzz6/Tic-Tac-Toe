@@ -1,0 +1,74 @@
+{
+  "name": "Tic-Tac-Toe-Game",
+  "version": "1.0.0",
+  "description": "A Tic-Tac-Toe game built with C++ and EasyX graphics library",
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/Tic-Tac-Toe.git"
+  },
+  "keywords": [
+    "c++",
+    "game",
+    "tic-tac-toe",
+    "easyx",
+    "graphics",
+    "windows"
+  ],
+  "bugs": {
+    "url": "https://github.com/your-username/Tic-Tac-Toe/issues"
+  },
+  "homepage": "https://github.com/your-username/Tic-Tac-Toe#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "build": "build.bat",
+    "clean": "rmdir /s /q exe",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "EasyX_Demo/",
+    "Demo_Vedio/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "build.bat",
+    "Makefile"
+  ],
+  "main": "EasyX_Demo/demo2.cpp",
+  "bin": {
+    "tic-tac-toe": "./exe/Tic-Tac-Toe.exe",
+    "demo": "./exe/demo1.exe"
+  },
+  "config": {
+    "compiler": "g++",
+    "cxx_standard": "c++11",
+    "graphics_library": "EasyX",
+    "platform": "windows"
+  },
+  "build": {
+    "targets": [
+      {
+        "name": "demo1",
+        "source": "EasyX_Demo/demo1.cpp",
+        "output": "exe/demo1.exe",
+        "description": "Mouse interaction demo"
+      },
+      {
+        "name": "demo2",
+        "source": "EasyX_Demo/demo2.cpp",
+        "output": "exe/Tic-Tac-Toe.exe",
+        "description": "Tic-Tac-Toe game"
+      }
+    ],
+    "flags": {
+      "compiler": "-std=c++11 -Wall -Wextra",
+      "linker": "-leasyx -static-libgcc -static-libstdc++"
+    }
+  }
+} 
