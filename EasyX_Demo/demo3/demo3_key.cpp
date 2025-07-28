@@ -63,6 +63,9 @@ int main()
     IMAGE background_img;
     loadimage(&background_img, _T("img/background.png"));
 
+    bool is_left = false, is_right = false, is_up = false, is_down = false;
+
+
     while (running)
     {
 
@@ -73,20 +76,41 @@ int main()
             if(msg.message == WM_KEYDOWN){
                 switch(msg.vkcode){
                     case VK_LEFT:
-                        player1.pos.x -= player1.speed;
+                        is_left = true;
                         break;
                     case VK_RIGHT:
-                        player1.pos.x += player1.speed;
+                        is_right = true;
                         break;
                     case VK_UP:
-                        player1.pos.y -= player1.speed;
+                        is_up = true;
                         break;
                     case VK_DOWN:
-                        player1.pos.y += player1.speed;
+                        is_down = true;
+                        break;
+                }
+            }
+            if(msg.message == WM_KEYUP){
+                switch(msg.vkcode){
+                    case VK_LEFT:
+                        is_left = false;
+                        break;
+                    case VK_RIGHT:
+                        is_right = false;
+                        break;
+                    case VK_UP:
+                        is_up = false;
+                        break;
+                    case VK_DOWN:
+                        is_down = false;
                         break;
                 }
             }
         }
+        
+        if(is_left)player1.pos.x -= player1.speed;
+        if(is_right)player1.pos.x += player1.speed;
+        if(is_up)player1.pos.y -= player1.speed;
+        if(is_down)player1.pos.y += player1.speed;
 
         static int count = 0;
         if (++count % 5 == 0)
