@@ -9,6 +9,9 @@ const int PLAYER_WIDTH = 80;
 const int PLAYER_HEIGHT = 80;
 const int SHADOW_WIDTH = 32;
 
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 720;
+
 IMAGE img_player_left[PLAYER_ANIM_COUNT];
 IMAGE img_player_right[PLAYER_ANIM_COUNT];
 
@@ -139,7 +142,7 @@ void draw_player(Player &player, int delta, int dir_x, Animation &anim_left, Ani
 
 int main()
 {
-    initgraph(1280, 720);
+    initgraph(WINDOW_WIDTH, WINDOW_HEIGHT);
     bool running = true;
     Player player1;
 
@@ -204,14 +207,26 @@ int main()
             }
         }
 
-        if (is_left)
-            player1.pos.x -= player1.speed;
-        if (is_right)
-            player1.pos.x += player1.speed;
-        if (is_up)
-            player1.pos.y -= player1.speed;
-        if (is_down)
-            player1.pos.y += player1.speed;
+        int dir_x = is_left ? -1 : is_right ? 1 : 0;
+        int dir_y = is_up ? -1 : is_down ? 1 : 0;
+        double len_dir = sqrt(pow(dir_x, 2) + pow(dir_y, 2));
+
+        if(len_dir > 0)
+        {
+            double normalized_x = dir_x / len_dir;
+            double normalized_y = dir_y / len_dir;
+            player1.pos.x += int(normalized_x * player1.speed);
+            player1.pos.y += int(normalized_y * player1.speed);
+        }
+
+        if(player1.pos.x < 0)
+            player1.pos.x = 0;
+        if(player1.pos.y < 0)
+            player1.pos.y = 0;
+        if(player1.pos.x > WINDOW_WIDTH - PLAYER_WIDTH)
+            player1.pos.x = WINDOW_WIDTH - PLAYER_WIDTH;
+        if(player1.pos.y > WINDOW_HEIGHT - PLAYER_HEIGHT)
+            player1.pos.y = WINDOW_HEIGHT - PLAYER_HEIGHT;
 
         static int count = 0;
         if (++count % 5 == 0)
